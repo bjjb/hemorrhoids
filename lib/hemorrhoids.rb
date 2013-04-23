@@ -10,8 +10,6 @@ module Hemorrhoids
   autoload :Table, 'hemorrhoids/table'
   autoload :CLI, 'hemorrhoids/cli'
 
-  VERSION = "0.0.1"
-  
   # Lists all available tables (according to the AR connection)
   def self.tables
     @tables ||= ActiveRecord::Base.connection.tables.reject do |table|
