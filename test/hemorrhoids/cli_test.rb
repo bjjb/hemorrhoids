@@ -2,8 +2,12 @@ require 'test_helper'
 require 'hemorrhoids/cli'
 
 class Hemorrhoids::CLITest < Test::Unit::TestCase
-  def test_running_with_no_arguments_prints_help
-    assert_equal Hemorrhoids::CLI.usage, execute
+  include Hemorrhoids
+
+  def test_running_with_help_or_no_options_prints_help
+    assert_equal CLI.usage, execute
+    assert_equal CLI.usage, execute("-h")
+    assert_equal CLI.usage, execute("--help")
   end
 
 private

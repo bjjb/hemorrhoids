@@ -6,12 +6,12 @@ class HemorrhoidsTest < Test::Unit::TestCase
   end
 
   def test_app_is_set_up_for_tests
-    assert_equal [@transaction], @charlie.purchases
-    assert_equal [@transaction], @alice.sales
-    assert_equal [@anorak], @charlie.purchased_items
-    assert @transaction.comments.map(&:comment).include?("This will keep me dry.")
-    assert @alpha.comments.map(&:comment).include?("I wish I could afford this.")
-    assert_equal ['Clothing'], @belt.category_names
+    assert_equal [records[:transaction]], records[:charlie].purchases
+    assert_equal [records[:transaction]], records[:alice].sales
+    assert_equal [records[:anorak]], records[:charlie].purchased_items
+    assert records[:transaction].comments.map(&:comment).include?("This will keep me dry.")
+    assert records[:alpha].comments.map(&:comment).include?("I wish I could afford this.")
+    assert_equal ['Clothing'], records[:belt].category_names
   end
 
   def test_tables_includes_all_interesting_tables

@@ -2,7 +2,6 @@ require 'test/unit'
 
 require 'rubygems'
 require 'bundler'
-require 'active_record'
 
 $:.push(File.expand_path('../../lib', __FILE__)) unless $:.include?(File.expand_path('../../lib', __FILE__))
 require 'hemorrhoids'
@@ -40,6 +39,10 @@ module SampleApp
 
   class Category < ActiveRecord::Base
     has_and_belongs_to_many :products
+  end
+
+  def records
+    @records ||= {}
   end
 
   def create_connection
@@ -94,28 +97,28 @@ module SampleApp
   end
 
   def create_records
-    @alice = User.create!(:name => 'Alice')
-    @anorak = @alice.wares.create!(:name => 'Anorak', :quantity => 1, :price => 9.99)
-    @belt = @alice.wares.create!(:name => 'Belt', :quantity => 2, :price => 4.99)
-    @cap = @alice.wares.create!(:name => 'Cap', :quantity => 3, :price => 3)
-    @anorak.categories << Category.find_or_create_by_name('Clothing')
-    @belt.categories << Category.find_or_create_by_name('Clothing')
-    @cap.categories << Category.find_or_create_by_name('Clothing')
+    records[:alice] = User.create!(:name => 'Alice')
+    records[:anorak] = records[:alice].wares.create!(:name => 'Anorak', :quantity => 1, :price => 9.99)
+    records[:belt] = records[:alice].wares.create!(:name => 'Belt', :quantity => 2, :price => 4.99)
+    records[:cap] = records[:alice].wares.create!(:name => 'Cap', :quantity => 3, :price => 3)
+    records[:anorak].categories << Category.find_or_create_by_name('Clothing')
+    records[:belt].categories << Category.find_or_create_by_name('Clothing')
+    records[:cap].categories << Category.find_or_create_by_name('Clothing')
 
-    @bob = User.create!(:name => 'Bob')
-    @alpha = @bob.wares.create!(:name => 'Alpha Romeo', :quantity => 1, :price => 80000)
-    @bmw = @bob.wares.create!(:name => 'BMW', :quantity => 1, :price => 60000)
-    @chevy = @bob.wares.create!(:name => 'Chevrolet', :quantity => 2, :price => 59999.99)
-    @alpha.categories << Category.find_or_create_by_name('Automotive')
-    @bmw.categories << Category.find_or_create_by_name('Automotive')
-    @chevy.categories << Category.find_or_create_by_name('Automotive')
+    records[:bob] = User.create!(:name => 'Bob')
+    records[:alpha] = records[:bob].wares.create!(:name => 'Alpha Romeo', :quantity => 1, :price => 80000)
+    records[:bmw] = records[:bob].wares.create!(:name => 'BMW', :quantity => 1, :price => 60000)
+    records[:chevy] = records[:bob].wares.create!(:name => 'Chevrolet', :quantity => 2, :price => 59999.99)
+    records[:alpha].categories << Category.find_or_create_by_name('Automotive')
+    records[:bmw].categories << Category.find_or_create_by_name('Automotive')
+    records[:chevy].categories << Category.find_or_create_by_name('Automotive')
 
-    @charlie = User.create(:name => 'Charlie')
+    records[:charlie] = User.create(:name => 'Charlie')
 
-    @transaction = Transaction.create!(:buyer => @charlie, :product => @anorak)
-    Comment.create(:commentable => @transaction, :user => @charlie, :comment => 'This will keep me dry.')
+    records[:transaction] = Transaction.create!(:buyer => records[:charlie], :product => records[:anorak])
+    Comment.create(:commentable => records[:transaction], :user => records[:charlie], :comment => 'This will keep me dry.')
 
-    @alpha.comments.create!(:user => @charlie, :comment => 'I wish I could afford this.')
+    records[:alpha].comments.create!(:user => records[:charlie], :comment => 'I wish I could afford this.')
   end
 
   def prepare_database

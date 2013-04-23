@@ -1,3 +1,3 @@
-module Hemerrhoids
-  VERSION = 0.0.1
+module Hemorrhoids
+  VERSION = "0.0.1"
 end

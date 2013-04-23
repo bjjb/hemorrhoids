@@ -4,6 +4,8 @@
 # determine exactly which tables are related. They can provide a directory of
 # related record IDs, which may then be used to restrict a database dump to
 # just the associated records.
+require 'active_record' rescue raise("You need activerecord installed to run hemorrhoids!")
+
 module Hemorrhoids
   autoload :Hemorrhoid, 'hemorrhoids/hemorrhoid'
   autoload :Association, 'hemorrhoids/association'

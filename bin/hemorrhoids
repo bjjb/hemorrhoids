@@ -1,9 +1,3 @@
 #!/usr/bin/env ruby
-
-require 'rubygems'
-require 'bundler'
-Bundler.setup(:default)
-
-require 'hemorrhoids'
-
-Hemorrhoids::CLI.run!
+require 'hemorrhoids/cli'
+Hemorrhoids::CLI.start!
