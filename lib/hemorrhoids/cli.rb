@@ -1,23 +1,26 @@
 require 'optparse'
 module Hemorrhoids
-  class CLI
+  class CLI < OptionParser
     def initialize(args = ARGV.clone)
       @args = args
+      super do |o|
+      end
     end
 
     def start!
-      args = option_parser.order!(args)
-      puts "Running Hemorrhoids..."
+      args = order!(args)
     end
 
     def option_parser
-      @option_parser ||= OptionParser.new
+      
     end
 
     def self.usage
-      <<-EOF
-USAGE: hemorrhoids [options] [description]
-      EOF
+      option_parser.to_s
+    end
+
+    def self.option_parser
+
     end
 
     def self.start!(args = ARGV.clone)

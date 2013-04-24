@@ -1,6 +1,6 @@
 require File.expand_path('../test_helper', __FILE__)
 
-class HemorrhoidsTest < Test::Unit::TestCase
+class HemorrhoidsTest < MiniTest::Unit::TestCase
   def setup
     prepare_database
   end

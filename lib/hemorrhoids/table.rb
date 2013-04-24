@@ -18,9 +18,13 @@ module Hemorrhoids
     end
 
     def klass
-      @klass ||= class_name.constantize
+      @klass ||= find_or_build_klass
     rescue
       UndescribableTable.new(name)
+    end
+
+    def find_or_build_klass
+      klass = class_name.constantize
     end
 
     def count
