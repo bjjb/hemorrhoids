@@ -42,7 +42,7 @@ for a full list of configurable options.
 
 ## Compatability / Caveats
 
-hemerrhoids has been tested with ActiveRecord 3.2.8 and Rails 2.3.14. Your
+hemerrhoids has been tested with ActiveRecord 3.2.13 and Rails 2.3.14. Your
 mileage may vary. Let me know if it works (or doesn't) with another version.
 
 ## Contributing

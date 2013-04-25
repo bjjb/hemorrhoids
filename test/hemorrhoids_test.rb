@@ -1,9 +1,8 @@
-require File.expand_path('../test_helper', __FILE__)
+require 'test_helper'
+require 'sample_app'
 
 class HemorrhoidsTest < MiniTest::Unit::TestCase
-  def setup
-    prepare_database
-  end
+  include SampleApp
 
   def test_app_is_set_up_for_tests
     assert_equal [@transaction], @charlie.purchases

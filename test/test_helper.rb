@@ -1,2 +1,2 @@
-require 'minitest/unit'
-require 'hemorrhoids'
+require 'minitest/autorun'
+require 'sample_app'

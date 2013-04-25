@@ -6,7 +6,8 @@ module Hemorrhoids
     attr_accessor :namespace
 
     def initialize(name, namespace = nil)
-      @name, @namespace = name, namespace
+      @name, @namespace = name.to_s, namespace
+      @table = connection.table(name.to_s)
     end
 
     def namespace
@@ -18,13 +19,17 @@ module Hemorrhoids
     end
 
     def klass
-      @klass ||= find_or_build_klass
-    rescue
-      UndescribableTable.new(name)
+      @klass ||= find_or_build_class
     end
 
-    def find_or_build_klass
-      klass = class_name.constantize
+    def find_or_build_class
+      class_name.constantize
+    rescue NameError
+      build_class
+    end
+
+    def build_class
+      raise column_names.inspect
     end
 
     def count

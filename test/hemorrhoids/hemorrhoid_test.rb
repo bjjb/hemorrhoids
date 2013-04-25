@@ -1,28 +1,22 @@
 require 'test_helper'
+require 'hemorrhoids/hemorrhoid'
 
 module Hemorrhoids
-  class HemorrhoidTest < Test::Unit::TestCase
-    def setup
-      prepare_database
+  class HemorrhoidTest < MiniTest::Unit::TestCase
+    include SampleApp
+
+    def test_hemorrhoid_uses_a_real_class_if_available
+      hemorrhoid = Hemorrhoid.new(:products)
+      assert hemorrhoid.associations[:users]
     end
 
-    def test_creation_with_a_table
-      table = Table.new('transaction')
-      hemorrhoid = Hemorrhoid.new(table)
-      assert_equal table, hemorrhoid.table
-      assert_equal 'SampleApp::Transaction', hemorrhoid.class_name
-    end
-
-    def test_creation_with_a_table_name
-      hemorrhoid = Hemorrhoid.new('comment')
-      assert_kind_of Table, hemorrhoid.table
-      assert_equal 'SampleApp::Comment', hemorrhoid.class_name
-    end
-
-    def test_conditions
-      hemorrhoid = Hemorrhoid.new('categories', { :name => 'Clothing' })
-      expected = SampleApp::Category.all(:conditions => { :name => 'Clothing' }).map(&:id)
-      assert_equal expected, hemorrhoid.ids
+    def test_hemorrhoid_gets_all_related_info
+      results = Hemorrhoid.new(:products).dump([1])
+      assert_equal [:comments, :products, :transactions, :users], results.keys
+      assert_equal [1, 2, 3, 4, 5, 6], results[:products]
+      assert_equal [1, 2, 3], results[:users]
+      assert_equal [1], results[:transactions]
+      assert_equal [1, 2], results[:comments]
     end
   end
 end

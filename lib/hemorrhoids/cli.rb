@@ -8,7 +8,7 @@ module Hemorrhoids
     end
 
     def start!
-      args = order!(args)
+      args = order!(args) unless args.nil?
     end
 
     def option_parser
