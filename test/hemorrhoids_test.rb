@@ -1,35 +1,24 @@
 require 'test_helper'
-require 'sample_app'
+require 'hemorrhoids'
 
 class HemorrhoidsTest < MiniTest::Unit::TestCase
-  include SampleApp
+  include TestApp
 
   def test_app_is_set_up_for_tests
-    assert_equal [@transaction], @charlie.purchases
-    assert_equal [@transaction], @alice.sales
-    assert_equal [@anorak], @charlie.purchased_items
-    assert @transaction.comments.map(&:comment).include?("This will keep me dry.")
-    assert @alpha.comments.map(&:comment).include?("I wish I could afford this.")
-    assert_equal ['Clothing'], @belt.category_names
+    assert_equal [Transaction.first], User.find_by_name('Charlie').purchases
+    assert_equal [Transaction.first], User.find_by_name('Alice').sales
+    assert_equal ['Anorak'], User.find_by_name('Charlie').purchased_items.map(&:name)
+    assert_includes Transaction.first.comments.map(&:comment), "This will keep me dry."
+    assert_includes Product.find_by_name('Alpha Romeo').comments.map(&:comment), "I wish I could afford this."
+    assert_equal ['Clothing'], Product.find_by_name('Belt').category_names
   end
 
-  def test_tables_includes_all_interesting_tables
-    names = Hemorrhoids.tables.map(&:name)
-    assert names.include?('products')
-    assert names.include?('users')
-    assert names.include?('transactions')
-    assert names.include?('comments')
-    assert names.include?('categories')
-    assert names.include?('categories_products')
+  def test_orm_classes_can_return_a_hemorrhoid
+    hemorrhoid = TestApp::Product.hemorrhoid
   end
 
-  def test_tables_also_includes_crappy_tables
-    names = Hemorrhoids.tables.map(&:name)
-    assert names.include?('leftovers')
-  end
-
-  def test_schema_tables_are_ignored
-    names = Hemorrhoids.tables.map(&:name)
-    assert !names.include?('schema_migrations')
+  def test_orm_instances_can_return_a_hemorrhoid
+    hemorrhoid = TestApp::Product.first.hemorrhoid
+    assert_equal [Product.first.id], hemorrhoid.ids
   end
 end

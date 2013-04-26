@@ -3,20 +3,22 @@ require 'hemorrhoids/hemorrhoid'
 
 module Hemorrhoids
   class HemorrhoidTest < MiniTest::Unit::TestCase
-    include SampleApp
+    include TestApp
 
-    def test_hemorrhoid_uses_a_real_class_if_available
-      hemorrhoid = Hemorrhoid.new(:products)
-      assert hemorrhoid.associations[:users]
+    def test_hemorrhoid_can_be_created_with_ids
+      assert_equal [1], Hemorrhoid.new(Product, ids: [1]).ids
     end
 
-    def test_hemorrhoid_gets_all_related_info
-      results = Hemorrhoid.new(:products).dump([1])
-      assert_equal [:comments, :products, :transactions, :users], results.keys
-      assert_equal [1, 2, 3, 4, 5, 6], results[:products]
-      assert_equal [1, 2, 3], results[:users]
-      assert_equal [1], results[:transactions]
-      assert_equal [1, 2], results[:comments]
+    def test_hemorrhoid_has_the_right_data
+      expected = %w[products users comments transactions categories_products categories].sort
+      assert_equal expected, Hemorrhoid.new(Product, ids: [1]).to_hash.keys
+    end
+
+    def test_hemorrhoid_has_the_right_associations
+      associations = Hemorrhoid.new(Product).associations.map(&:name)
+      assert_includes associations, 'user'
+      assert_includes associations, 'comments'
+      assert_includes associations, 'transactions'
     end
   end
 end

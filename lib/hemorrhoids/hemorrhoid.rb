@@ -1,5 +1,4 @@
 require 'hemorrhoids/collector'
-require 'hemorrhoids/table'
 require 'hemorrhoids/association'
 
 module Hemorrhoids
@@ -10,38 +9,32 @@ module Hemorrhoids
   # AR associations. Otherwise it will guess from the column names what the
   # associations are supposed to be.
   class Hemorrhoid
-    attr_reader :namespace, :table
+    attr_reader :ids
 
     # Create a new Hemorrhoid around a particular table.
-    def initialize(table, options = {})
-      @options = options
-      @table = Table.new(table)
+    def initialize(klass, options = {})
+      @klass, @table, @options = klass, klass.table_name, options.symbolize_keys
+      @ids = @options.delete(:ids) || []
+
+      @hash ||= {}
+      @hash[@table] ||= []
+      @hash[@table] += @ids
+      associations.each do |association|
+        @hash.merge! association.to_hash(@ids)
+      end
     end
 
-    def klass
-      @klass ||= @table.klass
+    def to_hash
+      hash = { @table => [ids] }
+      associations.each do
+      end
+      hash
     end
 
     def associations
-      @associations ||= klass.reflect_on_all_associations.map do |association|
+      @associations ||= @klass.reflect_on_all_associations.map do |association|
         Association.new(association)
       end
-    end
-
-    def hemorrhoids
-      @hemorrhoids ||= associations.map(&:hemorrhoid)
-    end
-
-    def dump(ids, options = {})
-      ids = Array(ids).map(&:to_i)
-      @results ||= {}
-      @results[@table.name] ||= []
-      @results[@table.name] += ids
-      associations.each do |association|
-        results = association.dump(ids, options[association.name] || {})
-        @results.deep_merge!(results)
-      end
-      results
     end
 
     def has_many_associations
@@ -61,8 +54,7 @@ module Hemorrhoids
     end
 
     def to_s
-      s = "#{klass.name}: #{associations.map(&:to_s).join('; ')}"
+      s = "#{@klass.name}: #{associations.map(&:to_s).join('; ')}"
     end
-
   end
 end

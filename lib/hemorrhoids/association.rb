@@ -8,11 +8,11 @@ module Hemorrhoids
     end
 
     def macro
-      @macro ||= @association.macro
+      @association.macro
     end
 
     def name
-      @name ||= @association.name
+      @association.name
     end
 
     def klass
@@ -56,8 +56,12 @@ module Hemorrhoids
       "#{macro} #{name}"
     end
 
-    def hemorrhoid
-      @hemorrhoid ||= Hemorrhoid.new(table) if table
+    def to_hash(ids = [])
+      if belongs_to?
+        { association.plural_name => association.active_record.where(:id => ids).pluck(association.foreign_key) }
+      else
+        {}
+      end
     end
   end
 end
