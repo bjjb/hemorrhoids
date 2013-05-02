@@ -15,8 +15,5 @@ module Hemorrhoids
       assert_equal [1], result['users']
     end
 
-    def test_has_many_association_returns_the_ids_of_associated_records
-
-    end
   end
 end

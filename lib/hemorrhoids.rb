@@ -20,12 +20,14 @@ module Hemorrhoids
   end
 
   def hemorrhoid(options = {})
-    Hemorrhoid.new(self.class, options.merge(ids: [id]))
+    Hemorrhoid.new(self, options)
   end
 
   module ClassMethods
-    def hemorrhoid(options = {})
-      Hemorrhoid.new(self, options)
+    attr_writer :ignored_tables
+
+    def ignored_tables
+      @ignored_tables ||= @@ignored_tables
     end
   end
 
@@ -37,4 +39,5 @@ end
 if defined?(ActiveRecord::Base)
   ActiveRecord::Base.send(:include, Hemorrhoids)
 end
+
 require 'hemorrhoids/railtie' if defined?(Rails)

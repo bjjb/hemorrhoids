@@ -13,12 +13,7 @@ class HemorrhoidsTest < MiniTest::Unit::TestCase
     assert_equal ['Clothing'], Product.find_by_name('Belt').category_names
   end
 
-  def test_orm_classes_can_return_a_hemorrhoid
-    hemorrhoid = TestApp::Product.hemorrhoid
-  end
-
   def test_orm_instances_can_return_a_hemorrhoid
-    hemorrhoid = TestApp::Product.first.hemorrhoid
-    assert_equal [Product.first.id], hemorrhoid.ids
+    assert TestApp::Product.first.hemorrhoid
   end
 end

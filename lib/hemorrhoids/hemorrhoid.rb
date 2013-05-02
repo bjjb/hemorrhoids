@@ -1,5 +1,4 @@
-require 'hemorrhoids/collector'
-require 'hemorrhoids/association'
+require 'forwardable'
 
 module Hemorrhoids
   # A Hemorrhoid restricts the dumping of a table. Its `dump` method expects an
@@ -8,53 +7,60 @@ module Hemorrhoids
   # A Hemorrhoid will use an existing class, if it can find one, to work out the
   # AR associations. Otherwise it will guess from the column names what the
   # associations are supposed to be.
-  class Hemorrhoid
-    attr_reader :ids
+  class Hemorrhoid < Hash
 
-    # Create a new Hemorrhoid around a particular table.
-    def initialize(klass, options = {})
-      @klass, @table, @options = klass, klass.table_name, options.symbolize_keys
-      @ids = @options.delete(:ids) || []
-
-      @hash ||= {}
-      @hash[@table] ||= []
-      @hash[@table] += @ids
-      associations.each do |association|
-        @hash.merge! association.to_hash(@ids)
+    def initialize(record, options = {})
+      super()
+      @record = record
+      @options = options
+      add_self
+      add_associated_ids
+      hemorrhoids.each do |hemorrhoid|
+        merge(hemorrhoid)
       end
     end
 
-    def to_hash
-      hash = { @table => [ids] }
-      associations.each do
-      end
-      hash
-    end
-
-    def associations
-      @associations ||= @klass.reflect_on_all_associations.map do |association|
-        Association.new(association)
+    def add_associated_ids
+      @record.class.reflect_on_all_associations.each do |association|
+        add(association.table_name, ids_for_association(association))
       end
     end
 
-    def has_many_associations
-      associations.select(&:has_many?)
+    def add_self
+      add(@record.class.table_name, @record.id)
     end
 
-    def has_and_belongs_to_many_associations
-      associations.select(&:has_and_belongs_to_many?)
+    def add(table, ids)
+      self[table] ||= []
+      self[table] |= Array(ids)
     end
 
-    def has_one_associations
-      associations.select(&:has_one?)
+    def ids_for_association(a)
+      send("ids_for_#{a.macro.to_s}_association", a)
     end
 
-    def belongs_to_associations
-      associations.select(&:belongs_to?)
+    def ids_for_belongs_to_association(a)
+      [@record[a.foreign_key]]
     end
 
-    def to_s
-      s = "#{@klass.name}: #{associations.map(&:to_s).join('; ')}"
+    def ids_for_has_many_association(a)
+      scope = @record.send(a.name)
+      if @options[:limit]
+        scope = scope.limit(@options[:limit])
+      end
+      scope.pluck(:id)
+    end
+
+    def ids_for_has_one_association(a)
+      @record.send(a.name).try(:id) || []
+    end
+
+    def ids_for_has_and_belongs_to_many_association(a)
+      scope = @record.send(a.name)
+      if @options[:limit]
+        scope = scope.limit(@options[:limit])
+      end
+      scope.pluck(a.association_primary_key)
     end
   end
 end

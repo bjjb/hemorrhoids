@@ -1,28 +1,18 @@
+require 'forwardable'
 module Hemorrhoids
   # Wraps an ActiveRecord reflection
   class Association
+    extend Forwardable
+
     attr_reader :association, :error
 
     def initialize(association)
       @association = association
     end
 
-    def macro
-      @association.macro
-    end
-
-    def name
-      @association.name
-    end
-
-    def klass
-      @klass ||= begin
-        @association.klass
-      rescue NameError
-        @error = $!
-        nil
-      end
-    end
+    def_delegators :@association, :klass, :macro, :name, :plural_name,
+      :foreign_key, :association_foreign_key, :collection, :active_record,
+      :class_name, :table_name, :type
 
     def valid?
       error.blank?
@@ -32,24 +22,10 @@ module Hemorrhoids
       !!valid?
     end
 
-    def table
-      @table ||= @association.table_name
-    end
-
-    def has_many?
-      macro == :has_many
-    end
-
-    def has_one?
-      macro == :has_one
-    end
-
-    def has_and_belongs_to_many?
-      macro == :has_and_belongs_to_many
-    end
-
-    def belongs_to?
-      macro == :belongs_to
+    %w(has_many has_one has_and_belongs_to_many belongs_to).each do |m|
+      define_method "#{m}?".to_sym do
+        macro == m.to_sym
+      end
     end
 
     def to_s
@@ -58,7 +34,12 @@ module Hemorrhoids
 
     def to_hash(ids = [])
       if belongs_to?
-        { association.plural_name => association.active_record.where(:id => ids).pluck(association.foreign_key) }
+        { plural_name => active_record.where(:id => ids).pluck(foreign_key) }
+      elsif has_many?
+      elsif has_one?
+        raise association.inspect
+      elsif has_and_belongs_to_many?
+        raise association.inspect
       else
         {}
       end

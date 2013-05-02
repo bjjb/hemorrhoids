@@ -109,6 +109,7 @@ module TestApp
       end
 
       create_table(:addresses, :force => true) do |t|
+        t.integer :user_id
         t.string :line1
         t.string :line2
         t.string :line3
