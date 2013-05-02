@@ -1,23 +1,16 @@
-require 'forwardable'
-
 module Hemorrhoids
-  # A Hemorrhoid restricts the dumping of a table. Its `dump` method expects an
-  # array of IDs - it will return tuples of table-names and IDs (uniqed), which
-  # will be enought to fetch all information.
-  # A Hemorrhoid will use an existing class, if it can find one, to work out the
-  # AR associations. Otherwise it will guess from the column names what the
-  # associations are supposed to be.
-  class Hemorrhoid < Hash
+  class Hemorrhoid
 
     def initialize(record, options = {})
-      super()
+      @hash = {}
+
       @record = record
       @options = options
+
       add_self
-      add_associated_ids
-      hemorrhoids.each do |hemorrhoid|
-        merge(hemorrhoid)
-      end
+      add_associated_ids unless added_associated_ids?
+
+      iterate!
     end
 
     def add_associated_ids
@@ -26,13 +19,27 @@ module Hemorrhoids
       end
     end
 
+    def iterate!
+      each do |table, ids|
+        klass = class_for(table)
+        Hemorrhoid.new(klass.find(id))
+      end
+    end
+
+    def class_for(table)
+      @classes ||= {}
+      @classes[table] ||= [@options.namespace, table.singularize.classify].flatten.join('::').constantize
+    end
+
     def add_self
       add(@record.class.table_name, @record.id)
     end
 
     def add(table, ids)
-      self[table] ||= []
-      self[table] |= Array(ids)
+      ids = Array(ids)
+      @hash[table] ||= []
+      @hash[table] |= ids
+      @hash[table].length - ids.length
     end
 
     def ids_for_association(a)
