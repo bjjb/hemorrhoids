@@ -7,32 +7,25 @@ require 'hemorrhoids/hemorrhoid'
 # just the associated records.
 #
 # Once your ORM has Hemorrhoids, you can call `Model::hemorrhoid` to return an
-# object that knows how to generate a simple array with tables and IDs, that you
-# can then use to extract complete sets of data.
+# object that knows how to generate a simple hash with tables and IDs. The real
+# trick, though, is recursively getting hemorrhoids for all these, until all IDs
+# have been visited, and you have a complete closed set - perfect for useful
+# dumps.
 module Hemorrhoids
-  @@ignored_tables = ["schema_migrations", "schema_version"]
-
-  # Lists all available tables (according to the AR connection)
-  def hemorrhoid_tables
-    @tables ||= connection.tables.reject do |table|
-      @@ignored_tables.include?(table)
-    end.sort
+  def hemorrhoid(options = {})
+    return @hemorrhoid if defined?(@hemorrhoid)
+    namespace = self.class.model_name.split('::')[0...-1].join('::')
+    options[:namespace] ||= namespace unless namespace.empty?
+    @hemorrhoid = Hemorrhoid.new(options)
+    @hemorrhoid.enqueue(self.class.table_name, self[self.class.primary_key])
+    @hemorrhoid
   end
 
-  def hemorrhoid(options = {})
-    Hemorrhoid.new(self, options)
+  def self.included(mod)
+    mod.send(:extend, ClassMethods)
   end
 
   module ClassMethods
-    attr_writer :ignored_tables
-
-    def ignored_tables
-      @ignored_tables ||= @@ignored_tables
-    end
-  end
-
-  def Hemorrhoids.included(mod)
-    mod.extend ClassMethods
   end
 end
 

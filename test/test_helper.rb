@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'minitest/mock'
 require 'active_record'
 require 'hemorrhoids'
 
@@ -125,6 +126,7 @@ module TestApp
 
     def create_records
       alice = User.create!(:name => 'Alice')
+      alice.create_address!(:line1 => '123 Fake St.', :line2 => 'Testtown', :country => 'US')
       anorak = alice.wares.create!(:name => 'Anorak', :quantity => 1, :price => 9.99)
       belt = alice.wares.create!(:name => 'Belt', :quantity => 2, :price => 4.99)
       cap = alice.wares.create!(:name => 'Cap', :quantity => 3, :price => 3)
