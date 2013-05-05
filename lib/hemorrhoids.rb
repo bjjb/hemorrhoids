@@ -12,25 +12,6 @@ require 'hemorrhoids/hemorrhoid'
 # have been visited, and you have a complete closed set - perfect for useful
 # dumps.
 module Hemorrhoids
-  def hemorrhoid(options = {})
-    return @hemorrhoid if defined?(@hemorrhoid)
-    namespace = self.class.model_name.split('::')[0...-1].join('::')
-    options[:namespace] ||= namespace unless namespace.empty?
-    @hemorrhoid = Hemorrhoid.new(options)
-    @hemorrhoid.enqueue(self.class.table_name, self[self.class.primary_key])
-    @hemorrhoid
-  end
-
-  def self.included(mod)
-    mod.send(:extend, ClassMethods)
-  end
-
-  module ClassMethods
-  end
-end
-
-if defined?(ActiveRecord::Base)
-  ActiveRecord::Base.send(:include, Hemorrhoids)
 end
 
 require 'hemorrhoids/railtie' if defined?(Rails)
