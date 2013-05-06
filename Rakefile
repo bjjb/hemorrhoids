@@ -1,3 +1,5 @@
+require "rubygems" unless defined?(Gem)
+require "bundler/setup"
 require "bundler/gem_tasks"
 require "rake/testtask"
 

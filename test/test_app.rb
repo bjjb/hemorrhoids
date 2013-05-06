@@ -21,6 +21,7 @@ module TestApp
     has_many :sales, :through => :wares, :source => :transactions
     has_many :purchased_items, :through => :purchases, :source => :product
     has_many :sold_items, :through => :sales, :source => :product
+    has_many :comments
     has_one :address
     def to_s
       name
@@ -29,11 +30,14 @@ module TestApp
 
   class Address < ActiveRecord::Base
     belongs_to :user
+    validates_presence_of :user_id
   end
 
   class Transaction < ActiveRecord::Base
     belongs_to :product
+    validates_presence_of :product_id
     belongs_to :buyer, :class_name => "User"
+    validates_presence_of :buyer_id
     has_many :comments, :as => :commentable
     def to_s
       "#{buyer} bought #{product}"
@@ -46,6 +50,8 @@ module TestApp
     def to_s
       "#{user}: '#{comment}' (#{commentable})"
     end
+    validates_presence_of :user_id
+    validates_presence_of :commentable_id
   end
 
   class Category < ActiveRecord::Base
@@ -135,7 +141,7 @@ module TestApp
       chevy.categories << Category.find_or_create_by_name('Automotive')
       charlie = User.create(:name => 'Charlie')
       transaction = Transaction.create!(:buyer => charlie, :product => anorak)
-      Comment.create(:commentable => transaction, :user => charlie, :comment => 'This will keep me dry.')
+      transaction.comments.create!(:user => charlie, :comment => 'This will keep me dry.')
       alpha.comments.create!(:user => charlie, :comment => 'I wish I could afford this.')
     end
 

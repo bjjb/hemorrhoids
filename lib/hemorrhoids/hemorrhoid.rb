@@ -129,9 +129,5 @@ module Hemorrhoids
 
     def do_has_and_belongs_to_many(association, ids, &block)
     end
-
-    def class_for(table)
-      [@options[:namespace], table.to_s.classify].compact.join('::').constantize
-    end
   end
 end
