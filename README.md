@@ -49,43 +49,43 @@ want to dump the User with ID 1. Hemorrhoids maintains a queue (`q`) of
 unvisited records, and a result set (`r`) of completed records. Say, User 1 has
 2 products.
 
-    ```ruby
-    q = { :users => [1] }
-    r = { }
-    # :users [SELECT `products`.`id` FROM `products` WHERE `user_id` IN (1)]
-    # ... process other associations
-    q = { :products => [1, 2] }
-    r = { :users => [1] }
-    # process queue (it's not empty)
-    # product [SELECT `user_id` from `products` where `products`.`id` in (1,2)]
-    q = { }
-    r = { :users => [1], :products => [1, 2] }
-    ```
+```ruby
+q = { :users => [1] }
+r = { }
+# :users [SELECT `products`.`id` FROM `products` WHERE `user_id` IN (1)]
+# ... process other associations
+q = { :products => [1, 2] }
+r = { :users => [1] }
+# process queue (it's not empty)
+# product [SELECT `user_id` from `products` where `products`.`id` in (1,2)]
+q = { }
+r = { :users => [1], :products => [1, 2] }
+```
 
 In a slightly more complicated example (though still totally trivial), say a
 second user has products 3 and 4, a third user has 5 and 6, and that third user
 commented on user 1's second product. Starting with user 1...
 
-    ```ruby
-    q = { :users => [1] }
-    r = { }
-    # :users
-    # has_many :products, :comments
-    q = { :products => [1, 2] }
-    r = { :users => [1] }
-    # :products
-    q = { :comments => [1], :users => [3] }
-    r = { :users => [1], :products => [1, 2] }
-    # :comments
-    q = { :users => [3] } # comment 1 is on product 1, which is in r already
-    r = { :users => [1], :products => [1, 2], :comments => [1] }
-    # :users
-    q = { :products => [5, 6] }
-    r = { :users => [1, 3], :products => [1, 2], :comments => [1] }
-    #: products
-    q = { }
-    r = { :users => [1, 3], :products => [1, 3, 5, 6], :comments => [1] }
-    ```
+```ruby
+q = { :users => [1] }
+r = { }
+# :users
+# has_many :products, :comments
+q = { :products => [1, 2] }
+r = { :users => [1] }
+# :products
+q = { :comments => [1], :users => [3] }
+r = { :users => [1], :products => [1, 2] }
+# :comments
+q = { :users => [3] } # comment 1 is on product 1, which is in r already
+r = { :users => [1], :products => [1, 2], :comments => [1] }
+# :users
+q = { :products => [5, 6] }
+r = { :users => [1, 3], :products => [1, 2], :comments => [1] }
+#: products
+q = { }
+r = { :users => [1, 3], :products => [1, 3, 5, 6], :comments => [1] }
+```
 
 It's usually a lot more involved, but the same principles apply. The worst case
 is N * N-1 selects when you have N tables, in which case you'll end up with all
