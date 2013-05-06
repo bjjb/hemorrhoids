@@ -2,41 +2,70 @@ require 'hemorrhoids'
 require 'optparse'
 
 module Hemorrhoids
-  class CLI < OptionParser
+  class CLI
+
     def initialize(args = ARGV)
       @args = args.dup
-      super()
-      on('-h', '--help', 'Print this message', :help)
-      on('-v', '--verbose', 'Be noisy', :verbose)
-      on('-f', '--output FORMAT', 'Set output format (see --formats)', :format)
-      on("-F", '--formats', 'List available outputs', :list_formats)
+      @parser = OptionParser.new do |o|
+        o.program_name = "hemorrhoids"
+        o.on('-h', '--help', 'Print this message', &method(:help))
+        o.on('-v', '--verbose', 'Be noisy', &method(:verbose))
+        o.on('-f', '--output-format FORMAT', 'Set output format (see --formats)', &method(:output_format=))
+        o.on("-F", '--formats', 'List available outputs', &method(:list_formats))
+      end
     end
 
-    def help
-      puts self
-      exit(0)
+    def help(*args)
+      puts @parser.to_s
+      @finish = true
     end
 
     def verbose(verbose)
       @verbose = verbose
     end
 
-    def list_formats
-      puts "json"
-      exit 0
+    def list_formats(*args)
+      puts output_formats.join(', ')
+      @finish = true
     end
 
-    def on(*args, &block)
-      if block_given?
-        super
+    def output_formats
+      %w(json yaml)
+    end
+
+    def output_format
+      @output_format ||= 'json'
+    end
+
+    def output_format=(*args)
+      format = args.shift
+      if output_formats.include?(format)
+        @output_format = format
       else
-        super(*args.push(&method(args.pop)))
+        puts "Unknown output format: #{format}"
       end
     end
 
     def start!
+      @parser.order!(@args)
+      return if @finish
       return help if @args.empty?
-      order!(@args)
+      load_rails if load_rails?
+      puts "This CLI doesn't do anything yet."
+    end
+
+    def load_rails?
+      return false if defined?(Rails)
+      File.exists?(File.expand_path("config/environment.rb"))
+    end
+
+    def load_rails
+      puts "Loading rails..." if verbose?
+      require File.expand_path("config/environment.rb")
+    end
+
+    def verbose?
+      !!@verbose
     end
 
     def self.start!(args = ARGV)

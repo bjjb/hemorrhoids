@@ -3,7 +3,7 @@
 
 > This is a *work in progress*
 
-Helps create small, targeted database dumps.
+Helps create smaller, targeted database dumps.
 
 ## Installation
 
@@ -27,20 +27,11 @@ See `hemerrhoids --help` for command-line usage
 
 ### In a Ruby on Rails project
 
-Add the file to your project, and run
-
-`rake db:dump`
-
-This will generate a dump file in db/dump.yml, printing out what it's doing
-along the way. You will need to specify a `HEMORRHOID_ARGS` environment
-variable, which contains `table_name:conditions`. For example
+To start a dump from User#99, try
 
 ```
-  HEMORRHOID_ARGS="user:updated_at > 2011-01-01" rake db:dump
+rails runner 'User.find(99).hemorrhoid.dump(:json)' > dump.json
 ```
-
-To save to a different file, specify `HEMORRHOID_FILE`. Run `rake -D db:dump`
-for a full list of configurable options.
 
 ## How it works
 
@@ -52,12 +43,10 @@ unvisited records, and a result set (`r`) of completed records. Say, User 1 has
 ```ruby
 q = { :users => [1] }
 r = { }
-# :users [SELECT `products`.`id` FROM `products` WHERE `user_id` IN (1)]
-# ... process other associations
+# ... process associations in User#1
 q = { :products => [1, 2] }
 r = { :users => [1] }
-# process queue (it's not empty)
-# product [SELECT `user_id` from `products` where `products`.`id` in (1,2)]
+# process associations for Product#1 and #2
 q = { }
 r = { :users => [1], :products => [1, 2] }
 ```
@@ -69,20 +58,19 @@ commented on user 1's second product. Starting with user 1...
 ```ruby
 q = { :users => [1] }
 r = { }
-# :users
-# has_many :products, :comments
+# User#1 has products 1 and 2
 q = { :products => [1, 2] }
 r = { :users => [1] }
-# :products
-q = { :comments => [1], :users => [3] }
+# Product#2 has a comment
+q = { :comments => [1] }
 r = { :users => [1], :products => [1, 2] }
-# :comments
+# Comment#1 belongs_to User #3
 q = { :users => [3] } # comment 1 is on product 1, which is in r already
 r = { :users => [1], :products => [1, 2], :comments => [1] }
-# :users
+# User#3 has products 5 and 6
 q = { :products => [5, 6] }
 r = { :users => [1, 3], :products => [1, 2], :comments => [1] }
-#: products
+# All associated records for products 1 and 2 are already in r
 q = { }
 r = { :users => [1, 3], :products => [1, 3, 5, 6], :comments => [1] }
 ```
@@ -94,8 +82,14 @@ database, and there are better tools for that.
 
 ## Compatability / Caveats
 
-hemerrhoids has been tested with ActiveRecord 3.2.13 and Rails 2.3.14. Your
+hemerrhoids has been tested with ActiveRecord 3.2.13 and 2.3.18. Your
 mileage may vary. Let me know if it works (or doesn't) with another version.
+
+Right now, it is inefficient, in that it loads each record to get its
+associations. It would obviously be many times faster if it just selected the
+primary keys it needed, using the reflections. This is planned for a later
+version. Having said that, it's quick enough to extract all IDs for about a
+million records from a production MySQL database in 30s or so.
 
 ## Contributing
 
