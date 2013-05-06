@@ -6,7 +6,7 @@ module Hemorrhoids
   # this until the queue is empty.
   class Hemorrhoid
 
-    attr_accessor :q, :r
+    attr_accessor :q, :r, :options
 
     # Creates a new Hemorrhoid.
     # Options:

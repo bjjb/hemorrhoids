@@ -14,4 +14,10 @@ require 'hemorrhoids/hemorrhoid'
 module Hemorrhoids
 end
 
-require 'hemorrhoids/railtie' if defined?(Rails)
+if defined?(ActiveRecord::Base)
+  require 'hemorrhoids/active_record'
+end
+
+if defined?(Rails)
+  require 'hemorrhoids/railtie'
+end

@@ -3,8 +3,6 @@ require 'hemorrhoids/hemorrhoid'
 
 module Hemorrhoids
   class HemorrhoidTest < MiniTest::Unit::TestCase
-    include TestApp
-
     def test_creating_a_new_hemorrhoid
       hemorrhoid = Hemorrhoid.new
       assert_equal({}, hemorrhoid.q)
@@ -79,7 +77,7 @@ module Hemorrhoids
       assert_equal({ products: [1, 2, 3] }, hemorrhoid.r)
     end
 
-    def test_process_will_work_through_the_q
+    def test_process_will_work_through_the_queue
       hemorrhoid = Hemorrhoid.new(q: { a: [1, 2], b: [5] })
       hemorrhoid.process do |key, values|
         values.each do |value|
@@ -88,6 +86,13 @@ module Hemorrhoids
       end
       assert_equal([1,2,3,4,5,6,7,8,9,0], hemorrhoid.r[:a])
       assert_equal([5,6,7,8,9,0,1,2,3,4], hemorrhoid.r[:b])
+    end
+
+    def test_options_can_be_merged
+      hemorrhoid = Hemorrhoid.new(sort: true)
+      assert hemorrhoid.options[:sort]
+      hemorrhoid.options.merge!(sort: false)
+      refute hemorrhoid.options[:sort]
     end
 
     def test_process_works_on_all_associations
