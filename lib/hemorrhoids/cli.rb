@@ -1,39 +1,52 @@
+require 'hemorrhoids'
 require 'optparse'
+
 module Hemorrhoids
-  class CLI
-    def initialize(args = ARGV.clone)
-      @args = args
+  class CLI < OptionParser
+    def initialize(args = ARGV)
+      @args = args.dup
+      super()
+      on('-h', '--help', 'Print this message', :help)
+      on('-v', '--verbose', 'Be noisy', :verbose)
+      on('-f', '--output FORMAT', 'Set output format (see --formats)', :format)
+      on("-F", '--formats', 'List available outputs', :list_formats)
     end
 
-    def start!
-      @args = option_parser.order!(@args)
-      quit! option_parser.help if @args.empty?
-      hemorrhoids << parse! until @args.empty?
-      # use the outputter (set from the CLI) to dump the hemorrhoids...
-      puts hemorrhoids.inspect
+    def help
+      puts self
+      exit(0)
     end
 
-    def parse!
-      # parse @args to build a Hemorrhoid
+    def verbose(verbose)
+      @verbose = verbose
     end
 
-    def quit(message, code = -1)
-      puts message
-      exit(code)
+    def list_formats
+      puts "json"
+      exit 0
     end
 
-    def option_parser
-      @option_parser ||= OptionParser.new do |o|
-        o.program_name = "hemorrhoids"
+    def on(*args, &block)
+      if block_given?
+        super
+      else
+        super(*args.push(&method(args.pop)))
       end
     end
 
-    def self.usage
-      new.option_parser.help
+    def start!
+      return help if @args.empty?
+      order!(@args)
     end
 
-    def self.start!(args = ARGV.clone)
+    def self.start!(args = ARGV)
       new(args).start!
+    end
+
+    def self.usage
+      cli = new
+      cli.program_name = 'hemorrhoids'
+      cli.to_s
     end
   end
 end

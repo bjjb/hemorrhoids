@@ -1,3 +1,4 @@
 #!/usr/bin/env ruby
+require 'rubygems' unless defined?(Gem)
 require 'hemorrhoids/cli'
 Hemorrhoids::CLI.start!
