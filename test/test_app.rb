@@ -143,6 +143,10 @@ module TestApp
       transaction = Transaction.create!(:buyer => charlie, :product => anorak)
       transaction.comments.create!(:user => charlie, :comment => 'This will keep me dry.')
       alpha.comments.create!(:user => charlie, :comment => 'I wish I could afford this.')
+
+      topsy = Product.create!(:name => 'Topsy the kitten')
+      kittens = Category.create!(:name => 'Kittens')
+      topsy.categories << kittens
     end
 
     def configure!

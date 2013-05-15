@@ -7,3 +7,4 @@ gem "rake"
 gem "minitest"
 gem 'guard-minitest'
 gem 'activerecord'
+gem 'sinatra'

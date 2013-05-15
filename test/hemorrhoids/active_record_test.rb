@@ -7,7 +7,8 @@ module Hemorrhoids
     include TestApp
 
     def test_active_record_classes_have_subclasses
-      assert_equal Product, Product.hemorrhoid.active_record('products')
+      assert_equal Product, Product.hemorrhoid.lookup_model('products')
+      assert_equal Product, Product.hemorrhoid.lookup_model(:products)
     end
 
     def test_active_record_base_includes_hemorrhoids
@@ -26,7 +27,6 @@ module Hemorrhoids
 
     def test_active_record_hemorrhoids_has_a_map_of_tables_to_classes
       hemorrhoid = Product.first.hemorrhoid
-      assert_equal Product, hemorrhoid.active_record(:products)
     end
 
     def test_active_record_hemorrhoid_add_all_associated_records
@@ -44,42 +44,27 @@ module Hemorrhoids
     end
 
     def test_a_record_has_no_unrelated_info
-      user = User.create!(:name => 'Stranger')
-      hemorrhoid = user.hemorrhoid
+      hemorrhoid = Product.find_by_name('Topsy the kitten').hemorrhoid
       hemorrhoid.process
-      assert_equal([user.id], hemorrhoid.r[:users])
-      assert_nil hemorrhoid.r[:products]
-
-      product = user.wares.create(:name => 'Buckle')
-      hemorrhoid = product.hemorrhoid
-      hemorrhoid.process
-      assert_equal([user.id], hemorrhoid.r[:users])
-      assert_equal([product.id], hemorrhoid.r[:products])
-
-      clothing = Category.find_by_name!('Clothing')
-      product.categories << clothing
-      hemorrhoid = product.hemorrhoid(:sort => true)
-      hemorrhoid.process
-      %w[Alice Bob Charlie Stranger].each do |name|
-        user = User.find_by_name!(name)
-        assert_includes hemorrhoid.r[:users], user.id
-        user.wares.each do |product|
-          assert_includes hemorrhoid.r[:products], product.id
-          product.categories.each do |category|
-            assert_includes hemorrhoid.r[:categories], category.id
-          end
-        end
-      end
+      assert_equal([7], hemorrhoid.r[:products])
+      assert_equal([3], hemorrhoid.r[:categories])
+      assert_equal([[3, 7]], hemorrhoid.r[:categories_products])
+      assert_equal([:categories, :categories_products, :products], hemorrhoid.r.keys.sort)
     end
 
     def test_join_tables_are_condidered
-      kittens = Category.create!(:name => 'Kittens')
-      topsy = Product.create!(:name => 'Topsy the kitten')
-      topsy.categories << kittens
-
+      topsy = Product.find_by_name('Topsy the kitten')
+      kittens = Category.find_by_name('Kittens')
       hemorrhoid = topsy.hemorrhoid
       hemorrhoid.process
-      assert_equal([[kittens.id, topsy.id]], hemorrhoid.r[:categories_products])
+      assert_equal([[3, 7]], hemorrhoid.r[:categories_products])
+    end
+
+    def test_dump_fills_the_hemorrhoids_data
+      hemorrhoid = Product.find_by_name('Topsy the kitten').hemorrhoid
+      assert_equal "", hemorrhoid.r
+      hemorrhoid.dump
+      assert hemorrhoid.data
     end
   end
 end
