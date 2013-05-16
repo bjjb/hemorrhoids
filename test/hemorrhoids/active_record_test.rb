@@ -48,7 +48,7 @@ module Hemorrhoids
       hemorrhoid.process
       assert_equal([7], hemorrhoid.r[:products])
       assert_equal([3], hemorrhoid.r[:categories])
-      assert_equal([[3, 7]], hemorrhoid.r[:categories_products])
+      assert_equal([{ :category_id => 3, :product_id => 7 }], hemorrhoid.r[:categories_products])
       assert_equal([:categories, :categories_products, :products], hemorrhoid.r.keys.sort)
     end
 
@@ -57,14 +57,15 @@ module Hemorrhoids
       kittens = Category.find_by_name('Kittens')
       hemorrhoid = topsy.hemorrhoid
       hemorrhoid.process
-      assert_equal([[3, 7]], hemorrhoid.r[:categories_products])
+      assert_equal([{ :category_id => 3, :product_id => 7 }], hemorrhoid.r[:categories_products])
     end
 
     def test_dump_fills_the_hemorrhoids_data
       hemorrhoid = Product.find_by_name('Topsy the kitten').hemorrhoid
-      assert_equal "", hemorrhoid.r
+      hemorrhoid.process
       hemorrhoid.dump
-      assert hemorrhoid.data
+      expected = { :products => [7], :categories_products => [[3, 7]], :categories => [3] }
+      assert_equal expected, hemorrhoid.dump
     end
   end
 end

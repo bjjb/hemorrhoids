@@ -16,7 +16,7 @@ module Hemorrhoids
       self.class.reflect_on_all_associations.each do |reflection|
         Array(send(reflection.name)).each do |record|
           if reflection.macro == :has_and_belongs_to_many
-            value = [self, record].sort_by { |r| r.class.table_name }.map(&:id)
+            value = { reflection.foreign_key.to_sym => id, reflection.association_foreign_key.to_sym => record.id }
             yield(reflection.options[:join_table], [value])
           end
           yield(record.class.table_name, record.id)
@@ -56,10 +56,22 @@ module Hemorrhoids
         self.class.lookup_model(table)
       end
 
+      def dump?
+        !ios.empty?
+      end
+
+      def ios
+        @ios ||= []
+      end
+
+      def handle(k, v)
+        enqueue(k, v)
+      end
+
       def process(&block)
         super do |k, v|
           if ar = lookup_model(k)
-            ar.hemorrhoids(v, &method(:enqueue))
+            ar.hemorrhoids(v, &method(:handle))
           end
         end
       end
@@ -72,9 +84,39 @@ module Hemorrhoids
         process unless finished?
         dump = []
         r.each do |k, v|
-          dump << class_name(k).where(:id => v).to_json
+          dump << jsonify(k, v)
         end
         dump
+      end
+
+      def jsonify(k, v)
+        if c = classify(k)
+          jsonify_records(c, v) 
+        else
+          v.each do |conditions|
+            jsonify_row(k, conditions)
+          end
+        end
+      end
+
+      def jsonify_records(klass, v)
+        klass.where(:id => v).to_json
+      end
+
+      def jsonify_row(k, conditions)
+        table = Arel::Table.new(k)
+        result = ::ActiveRecord::Base.connection.execute(table.project('*').where(conditions).to_sql)
+        result.size
+      end
+
+      def models
+        ObjectSpace.each_object(Class).select do |k|
+          k < ::ActiveRecord::Base
+        end
+      end
+
+      def classify(k)
+        (@classes ||= {})[k] ||= models.find { |m| m.table_name == k.to_s }
       end
     end
 
