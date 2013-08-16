@@ -1,0 +1,11 @@
+language: ruby
+rvm:
+- 1.8.7
+- 1.9.3
+- 2.0.0
+env:
+- "AR_VERSION=4.0"
+- "AR_VERSION=3.2"
+- "AR_VERSION=3.1"
+- "AR_VERSION=3.0"
+- "AR_VERSION=2.3"

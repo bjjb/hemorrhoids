@@ -1,9 +1,20 @@
-
 # Hemorrhoids
 
 > This is a *work in progress*
 
-Helps create smaller, targeted database dumps.
+If you work on a project with a large database, you will most likely want a
+realistic development database locally which contains a subset of the production
+data. Let's say you want a particular user record, and all that user's
+purchases, comments, etc.
+
+```
+$ hemorrhoids dump mysql://user:pass@host/database users 'email=bob@example.com'
+```
+
+It connects to the database, gets the record specified by
+'email=bob@example.com', and tries to work out which records are related to this
+record. For each of those related records, it gets all _their_ related records,
+and so on. 
 
 ## Installation
 
@@ -24,6 +35,19 @@ Or install it yourself as:
 ### Standalone
 
 See `hemerrhoids --help` for command-line usage
+
+### In Ruby
+
+```ruby
+require 'rubygems' # only needed for Ruby 1.8.7
+require 'hemorrhoids'
+
+# Squeeze out all data related to user with the ID of 123
+Hemorrhoids.squeeze('sqlite3://user:pass@localhost/dbname', :users => [123])
+
+# Dump all data related to the last product in the database
+Hemorrhoids.dump('mysql://user:pass@localhost/dbname', :products => :last)
+```
 
 ### In a Ruby on Rails project
 
@@ -79,6 +103,16 @@ It's usually a lot more involved, but the same principles apply. The worst case
 is N * N-1 selects when you have N tables, in which case you'll end up with all
 the IDs in the database. But then you may as well just dump your entire
 database, and there are better tools for that.
+
+### Determining associations
+
+You can tell Hemorrhoids which strategy to use for determining associations
+between records. With `:active_record`, it tries to load the ActiveRecord
+models, and reflect on the associations that way. If you have a Rails-compliant
+database with no deviations, then it will `:auto` will just look for column-names
+ending with `_id`, and for tables that look like join tables, and work out
+associations that way. Finally, you can give it a Hash of relations, and use
+`:custom` to explicitly specify associations. See the Wiki for details.
 
 ## Compatability / Caveats
 

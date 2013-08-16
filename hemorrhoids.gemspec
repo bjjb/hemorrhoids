@@ -17,7 +17,14 @@ Gem::Specification.new do |gem|
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^test/})
   gem.require_paths = ["lib"]
+
+  gem.add_dependency 'sequel'
+
   gem.add_development_dependency "sqlite3"
+  gem.add_development_dependency "mysql2"
+  gem.add_development_dependency "pg"
   gem.add_development_dependency "rack-test"
+  gem.add_development_dependency "minitest"
   gem.add_development_dependency "guard"
+  gem.add_development_dependency "sinatra"
 end
